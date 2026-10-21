@@ -112,25 +112,58 @@ def calculate(n, P, a, p):
     return R
 
 
-print("Параметры задаются для эллиптической кривой:")
-print("    y² ≡ x³ + a·x + b (mod p)")
-print()
-print("Введите значения:")
-print("  n      — число, на которое умножается точка P в выражении nP;")
-print("  p      — модуль, указанный после mod;")
-print("  a, b   — коэффициенты уравнения кривой;")
-print("  x, y   — координаты точки P = (x, y).")
-print()
+def check_point(point, name, a, b, p):
+    """Проверяет, что точка лежит на кривой y² ≡ x³ + ax + b (mod p)."""
+    x, y = point
+    if (y**2 - (x**3 + a * x + b)) % p != 0:
+        raise ValueError(f"Точка {name} не лежит на заданной эллиптической кривой.")
 
-n = int(input("Введите n: "))
-p = int(input("Введите модуль p: "))
-a, b = map(int, input("Введите коэффициенты эллиптической кривой a и b: ").split())
-x, y = map(int, input("Введите координаты точки P, x и y: ").split())
 
-P = (x % p, y % p)
+def main():
+    print("Режимы работы:")
+    print("  1 — умножение точки на число nP;")
+    print("  2 — сложение двух точек P + Q.")
+    mode = input("Выберите режим (1 или 2): ").strip()
 
-# Проверка, что точка лежит на кривой y² ≡ x³ + ax + b (mod p).
-if (P[1]**2 - (P[0]**3 + a * P[0] + b)) % p != 0:
-    raise ValueError("Точка P не лежит на заданной эллиптической кривой.")
+    if mode not in ("1", "2"):
+        raise ValueError("Неизвестный режим. Введите 1 или 2.")
 
-calculate(n, P, a, p)
+    print()
+    print("Параметры задаются для эллиптической кривой:")
+    print("    y² ≡ x³ + a·x + b (mod p)")
+    print()
+    print("Введите значения:")
+    if mode == "1":
+        print("  n      — число, на которое умножается точка P в выражении nP;")
+    print("  p      — модуль, указанный после mod;")
+    print("  a, b   — коэффициенты уравнения кривой;")
+    print("  x, y   — координаты точки P = (x, y).")
+    if mode == "2":
+        print("  x, y   — координаты точки Q = (x, y).")
+    print()
+
+    if mode == "1":
+        n = int(input("Введите n: "))
+    p = int(input("Введите модуль p: "))
+    a, b = map(int, input("Введите коэффициенты эллиптической кривой a и b: ").split())
+    x, y = map(int, input("Введите координаты точки P, x и y: ").split())
+
+    P = (x % p, y % p)
+
+    check_point(P, "P", a, b, p)
+
+    if mode == "1":
+        calculate(n, P, a, p)
+    else:
+        x, y = map(int, input("Введите координаты точки Q, x и y: ").split())
+        Q = (x % p, y % p)
+
+        check_point(Q, "Q", a, b, p)
+
+        R = add_points(P, Q, a, p)
+        point_value = "∞" if R is None else str(R)
+        print(f"Итог: P + Q = {P} + {Q} = {point_value}")
+
+
+if __name__ == "__main__":
+    main()
