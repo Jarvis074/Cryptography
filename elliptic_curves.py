@@ -119,14 +119,42 @@ def check_point(point, name, a, b, p):
         raise ValueError(f"Точка {name} не лежит на заданной эллиптической кривой.")
 
 
+def find_points(a, b, p):
+    """Находит все точки кривой перебором x и y от 0 до p - 1."""
+    # Квадраты по модулю p: какому y соответствует каждый остаток y².
+    squares = {}
+    for y in range(p):
+        squares.setdefault(y**2 % p, []).append(y)
+
+    points = []
+    for x in range(p):
+        right = (x**3 + a * x + b) % p
+        ys = squares.get(right, [])
+
+        if ys:
+            print(f"x = {x}: x³ + ax + b ≡ {right}, y = {', '.join(map(str, ys))}")
+        else:
+            print(f"x = {x}: x³ + ax + b ≡ {right}, точек нет")
+
+        for y in ys:
+            points.append((x, y))
+
+    print()
+    print("Точки кривой:", ", ".join(map(str, points)), "и ∞")
+    print(f"Итог: порядок кривой = {len(points) + 1}")
+
+    return points
+
+
 def main():
     print("Режимы работы:")
     print("  1 — умножение точки на число nP;")
-    print("  2 — сложение двух точек P + Q.")
-    mode = input("Выберите режим (1 или 2): ").strip()
+    print("  2 — сложение двух точек P + Q;")
+    print("  3 — нахождение всех точек кривой.")
+    mode = input("Выберите режим (1, 2 или 3): ").strip()
 
-    if mode not in ("1", "2"):
-        raise ValueError("Неизвестный режим. Введите 1 или 2.")
+    if mode not in ("1", "2", "3"):
+        raise ValueError("Неизвестный режим. Введите 1, 2 или 3.")
 
     print()
     print("Параметры задаются для эллиптической кривой:")
@@ -137,7 +165,8 @@ def main():
         print("  n      — число, на которое умножается точка P в выражении nP;")
     print("  p      — модуль, указанный после mod;")
     print("  a, b   — коэффициенты уравнения кривой;")
-    print("  x, y   — координаты точки P = (x, y).")
+    if mode in ("1", "2"):
+        print("  x, y   — координаты точки P = (x, y).")
     if mode == "2":
         print("  x, y   — координаты точки Q = (x, y).")
     print()
@@ -146,6 +175,12 @@ def main():
         n = int(input("Введите n: "))
     p = int(input("Введите модуль p: "))
     a, b = map(int, input("Введите коэффициенты эллиптической кривой a и b: ").split())
+
+    if mode == "3":
+        print()
+        find_points(a, b, p)
+        return
+
     x, y = map(int, input("Введите координаты точки P, x и y: ").split())
 
     P = (x % p, y % p)
